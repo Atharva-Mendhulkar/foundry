@@ -11,6 +11,8 @@ def supervisor_node(state: FoundryState) -> dict:
     
     if input_type == "document":
         return {"current_stage": "process_document"}
+    elif input_type == "query":
+        return {"current_stage": "process_query"}
     elif input_type == "voice":
         return {"current_stage": "process_voice"} # Handled in Phase 4
     elif input_type == "shift":
@@ -23,6 +25,8 @@ def route_from_supervisor(state: FoundryState) -> str:
     stage = state.get("current_stage")
     if stage == "process_document":
         return "document_processing_node"
+    elif stage == "process_query":
+        return "retrieval_node"
     # Additional routing for other phases can be added here
     return "end"
 
@@ -36,6 +40,8 @@ def check_error(state: FoundryState) -> str:
         return "entity_extraction_node"
     elif stage == "embed_document":
         return "embedding_node"
+    elif stage == "retrieval_complete":
+        return "end"
     elif stage == "complete":
         return "end"
         

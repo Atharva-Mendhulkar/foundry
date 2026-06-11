@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.db.neo4j import neo4j_db
 from app.db.lancedb import init_lancedb
-from app.routers import auth, ingest
+from app.routers import auth, ingest, graph, copilot
 import httpx
 from app.core.config import settings
 
@@ -41,6 +41,8 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(ingest.router)
 app.include_router(ingest.ws_router)
+app.include_router(graph.router, prefix="/api/v1/graph", tags=["graph"])
+app.include_router(copilot.router, prefix="/api/v1/copilot", tags=["copilot"])
 
 @app.get("/api/v1/health")
 async def health_check():

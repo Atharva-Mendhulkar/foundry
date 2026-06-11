@@ -9,6 +9,9 @@ import hashlib
 import uuid
 import json
 import asyncio
+import csv
+from io import StringIO
+from app.services.graph_service import GraphService
 import logging
 
 logger = logging.getLogger(__name__)
@@ -145,6 +148,55 @@ async def list_documents(page: int = 1, per_page: int = 20, current_user: Any = 
             })
             
         return {"items": items, "total": total}
+
+@router.post("/workorders-csv")
+async def upload_workorders_csv(
+    file: UploadFile = File(...),
+    current_user: Any = Depends(get_current_user)
+):
+    """Bulk import work orders from CSV directly into the Knowledge Graph."""
+    content = await file.read()
+    try:
+        text_content = content.decode("utf-8")
+        csv_reader = csv.DictReader(StringIO(text_content))
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Invalid CSV format")
+        
+    rows_queued = 0
+    facility_id = current_user.facility_id
+    
+    for row in csv_reader:
+        wo_number = row.get("wo_number")
+        eq_name = row.get("equipment_name")
+        failure_mode = row.get("failure_mode")
+        proc_code = row.get("procedure_code")
+        
+        if not wo_number or not eq_name:
+            continue
+            
+        try:
+            # 1. Upsert Equipment
+            eq = {"name": eq_name, "type": "unknown", "status": "operational"}
+            eq_id = await GraphService.upsert_equipment(eq, str(facility_id))
+            
+            # 2. Upsert Failure
+            if failure_mode:
+                fail = {"description": f"Work Order {wo_number}", "failure_mode": failure_mode}
+                f_id = await GraphService.upsert_failure(fail, eq_id)
+                
+                # 3. Upsert Procedure
+                if proc_code:
+                    proc = {"code": proc_code, "title": f"Procedure {proc_code}"}
+                    p_id = await GraphService.upsert_procedure(proc)
+                    await GraphService.link_failure_to_procedure(f_id, p_id)
+            
+            # For hackathon MVP we write directly instead of using LangGraph background job
+            rows_queued += 1
+        except Exception as e:
+            logger.error(f"Error processing CSV row {wo_number}: {e}")
+            
+    # Mocking job_id since we process synchronously for demo simplicity
+    return {"job_id": str(uuid.uuid4()), "rows_queued": rows_queued}
 
 # WebSocket route must be separate to mount at /ws
 @ws_router.websocket("/ws/ingest/{job_id}")

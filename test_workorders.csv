@@ -1,0 +1,6 @@
+wo_number,equipment_name,failure_mode,procedure_code,status
+WO-001,Pump-7,seal_leak,SOP-H14,Open
+WO-002,Pump-4,vibration,SOP-H14,Closed
+WO-003,Compressor-3,overheating,SOP-C02,Open
+WO-004,Hydraulic Press-2,fluid_leak,,Open
+WO-005,Conveyor-Belt-A,belt_snap,SOP-B01,Closed

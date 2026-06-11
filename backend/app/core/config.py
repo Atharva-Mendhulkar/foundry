@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     # Security
     JWT_SECRET: str = "supersecret_hackathon_key"
     JWT_ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 480 # 8 hours
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 2880 # 48 hours
     
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

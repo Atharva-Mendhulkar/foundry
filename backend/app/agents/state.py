@@ -17,6 +17,23 @@ class FoundryState(TypedDict):
     pending_actions: List[Dict[str, Any]]
     risk_events: List[Dict[str, Any]]
     
+    # Query Context
+    query: Optional[str]
+    session_id: Optional[str]
+    user_id: Optional[str]
+    equipment_context: Optional[str]
+    
+    # Query Results
+    resolved_entities: Optional[List[Dict[str, Any]]]
+    vector_results: Optional[List[Dict[str, Any]]]
+    graph_context: Optional[Dict[str, Any]]
+    merged_context: Optional[str]
+    
+    # Copilot Output
+    response: Optional[str]
+    sources: Optional[List[Dict[str, Any]]]
+    confidence: Optional[float]
+    
     # Errors & Status
     error: Optional[str]
     status: str
